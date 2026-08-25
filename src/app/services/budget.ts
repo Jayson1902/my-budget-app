@@ -17,9 +17,7 @@ export class BudgetService {
   // 1. Carica le transazioni dell'utente loggato da Supabase
   async caricaTransazioni() {
     try {
-      const {
-        data: { user },
-      } = await this.supabase.auth.getUser();
+      const { data: { user } } = await this.supabase.auth.getUser();
       if (!user) return;
 
       const { data, error } = await this.supabase
@@ -38,18 +36,21 @@ export class BudgetService {
   }
 
   // 2. Aggiunge una nuova transazione su Supabase
-  async addTransaction(transactionData: Omit<Transaction, 'id'>) {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
+  async addTransaction(transactionData: any) {
+    const { data: { user } } = await this.supabase.auth.getUser();
     if (!user) {
       console.error('Utente non autenticato!');
       return;
     }
 
     const newTransaction = {
-      ...transactionData,
-      user_id: user.id, // Fondamentale per la policy RLS
+      title: transactionData.title,
+      amount: transactionData.amount,
+      category: transactionData.category,
+      date: transactionData.date,
+      type: transactionData.type,
+      is_recurring: transactionData.isRecurring ?? transactionData.is_recurring ?? false,
+      user_id: user.id,
     };
 
     const { data, error } = await this.supabase
@@ -66,7 +67,10 @@ export class BudgetService {
 
   // 3. Rimuove una transazione tramite ID da Supabase
   async deleteTransaction(id: string) {
-    const { error } = await this.supabase.from('transactions').delete().eq('id', id);
+    const { error } = await this.supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
 
     if (error) {
       console.error('Errore durante la cancellazione:', error);
@@ -76,10 +80,10 @@ export class BudgetService {
   }
 
   // 4. Metodi di calcolo per il saldo e le spese nella dashboard
-  getSaldoMese(anno: number, mese: number, tipo?: number): number {
-    const transazioniMese = this.transactions().filter((t) => {
+  getSaldoMese(anno: number, mese: number): number {
+    const transazioniMese = this.transactions().filter(t => {
       const dataTransazione = new Date(t.date);
-      return dataTransazione.getFullYear() === anno && dataTransazione.getMonth() + 1 === mese;
+      return dataTransazione.getFullYear() === anno && (dataTransazione.getMonth() + 1) === mese;
     });
 
     return transazioniMese.reduce((acc, t) => {
@@ -90,28 +94,18 @@ export class BudgetService {
 
   getTotaleSpeseFisse(anno: number, mese: number): number {
     return this.transactions()
-      .filter((t) => {
+      .filter(t => {
         const d = new Date(t.date);
-        return (
-          d.getFullYear() === anno &&
-          d.getMonth() + 1 === mese &&
-          t.type === 'expense' &&
-          t.isRecurring
-        );
+        return d.getFullYear() === anno && (d.getMonth() + 1) === mese && t.type === 'expense' && (t.isRecurring || (t as any).is_recurring);
       })
       .reduce((acc, t) => acc + Number(t.amount), 0);
   }
 
   getTotaleSpeseVariabili(anno: number, mese: number): number {
     return this.transactions()
-      .filter((t) => {
+      .filter(t => {
         const d = new Date(t.date);
-        return (
-          d.getFullYear() === anno &&
-          d.getMonth() + 1 === mese &&
-          t.type === 'expense' &&
-          !t.isRecurring
-        );
+        return d.getFullYear() === anno && (d.getMonth() + 1) === mese && t.type === 'expense' && !t.isRecurring && !(t as any).is_recurring;
       })
       .reduce((acc, t) => acc + Number(t.amount), 0);
   }
