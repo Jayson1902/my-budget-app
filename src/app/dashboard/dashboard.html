@@ -1,0 +1,55 @@
+<div class="dashboard">
+  @if (caricamento()) {
+    <p class="caricamento">Caricamento...</p>
+  } @else {
+    <div class="header">
+      <button class="logout" (click)="logout()">Esci</button>
+    </div>
+
+    <!-- SELETTORE DEL MESE E SALDO -->
+    <div class="saldo-card">
+      <div class="mese-selector">
+        <button (click)="cambiaMese(-1)">‹</button>
+        <span class="etichetta">{{ nomeMeseFormattato }}</span>
+        <button (click)="cambiaMese(1)">›</button>
+      </div>
+      <span class="importo" [class.negativo]="saldo < 0">{{ saldo | number: '1.2-2' }} €</span>
+    </div>
+
+    <!-- RIEPILOGO SPESE CON DIFFERENZIAZIONE COLORI -->
+    <div class="riepilogo">
+      <div class="riepilogo-voce spesa-fissa">
+        <span class="etichetta">Spese fisse</span>
+        <span class="valore">{{ speseFisse | number: '1.2-2' }} €</span>
+      </div>
+      <div class="riepilogo-voce spesa-variabile">
+        <span class="etichetta">Spese variabili</span>
+        <span class="valore">{{ speseVariabili | number: '1.2-2' }} €</span>
+      </div>
+    </div>
+
+    <!-- FORM NUOVA TRANSAZIONE -->
+    <app-transaction-form></app-transaction-form>
+
+    <!-- LISTA TRANSAZIONI -->
+    <div class="lista-transazioni">
+      <h2>Transazioni</h2>
+      @if (budgetService.transactions().length === 0) {
+        <p class="vuoto">Nessuna transazione ancora.</p>
+      } @else {
+        @for (t of budgetService.transactions(); track t.id) {
+          <div class="riga-transazione">
+            <div class="info">
+              <span class="titolo">{{ t.title }}</span>
+              <span class="dettagli">{{ t.category }} &middot; {{ t.date }}</span>
+            </div>
+            <span class="importo-riga" [class.entrata]="t.type === 'income'">
+              {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | number: '1.2-2' }} €
+            </span>
+            <button class="elimina" (click)="elimina(t.id!)">✕</button>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

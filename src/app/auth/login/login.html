@@ -1,0 +1,57 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="brand-header">
+      <h2>{{ modalitaRegistrazione() ? 'Crea un account' : 'Bentornato' }}</h2>
+      <p class="subtitle">
+        {{
+          modalitaRegistrazione()
+            ? 'Inserisci i tuoi dati per registrarti'
+            : 'Inserisci le tue credenziali per accedere'
+        }}
+      </p>
+    </div>
+
+    @if (errore()) {
+      <div class="error-badge">
+        {{ errore() }}
+      </div>
+    }
+
+    <form (ngSubmit)="invia()" class="login-form">
+      <div class="field-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="nome@esempio.com"
+          required
+        />
+      </div>
+
+      <div class="field-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="caricamento()">
+        {{ caricamento() ? 'Caricamento...' : modalitaRegistrazione() ? 'Registrati' : 'Accedi' }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <span>{{ modalitaRegistrazione() ? 'Hai già un account?' : 'Non hai un account?' }}</span>
+      <button type="button" class="btn-toggle" (click)="toggleModalita()">
+        {{ modalitaRegistrazione() ? 'Accedi' : 'Registrati' }}
+      </button>
+    </div>
+  </div>
+</div>
