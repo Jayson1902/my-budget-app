@@ -17,6 +17,12 @@
       </div>
     }
 
+    @if (successo()) {
+      <div class="success-badge">
+        {{ successo() }}
+      </div>
+    }
+
     <form (ngSubmit)="invia()" class="login-form">
       <div class="field-group">
         <label for="email">Email</label>

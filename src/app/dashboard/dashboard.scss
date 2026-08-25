@@ -78,6 +78,8 @@
         font-weight: 500;
         letter-spacing: 0.3px;
         color: #94a3b8;
+        min-width: 110px;
+        text-align: center;
       }
     }
 
@@ -105,6 +107,11 @@
       display: flex;
       flex-direction: column;
       border: 1px solid;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+      }
 
       .etichetta {
         font-size: 0.72rem;
@@ -180,6 +187,7 @@
       justify-content: space-between;
       padding: 12px 0;
       border-bottom: 1px solid #f8fafc;
+      transition: background-color 0.15s ease;
 
       &:last-child {
         border-bottom: none;

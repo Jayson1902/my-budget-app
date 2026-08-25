@@ -53,6 +53,7 @@ export class BudgetService {
       category: transactionData.category,
       date: transactionData.date,
       type: transactionData.type,
+      is_recurring: transactionData.isRecurring, // Salvataggio corretto della spesa ricorrente
       user_id: user.id,
     };
 
@@ -96,12 +97,27 @@ export class BudgetService {
     return this.transactions()
       .filter((t) => {
         const d = new Date(t.date);
-        return d.getFullYear() === anno && d.getMonth() + 1 === mese && t.type === 'expense';
+        return (
+          d.getFullYear() === anno &&
+          d.getMonth() + 1 === mese &&
+          t.type === 'expense' &&
+          ((t as any).is_recurring || (t as any).isRecurring)
+        );
       })
       .reduce((acc, t) => acc + Number(t.amount), 0);
   }
 
   getTotaleSpeseVariabili(anno: number, mese: number): number {
-    return 0;
+    return this.transactions()
+      .filter((t) => {
+        const d = new Date(t.date);
+        return (
+          d.getFullYear() === anno &&
+          d.getMonth() + 1 === mese &&
+          t.type === 'expense' &&
+          !((t as any).is_recurring || (t as any).isRecurring)
+        );
+      })
+      .reduce((acc, t) => acc + Number(t.amount), 0);
   }
 }

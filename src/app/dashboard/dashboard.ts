@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { BudgetService } from '../services/budget';
@@ -13,50 +13,48 @@ import { TransactionForm } from './transaction-form/transaction-form';
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnInit {
-  caricamento = signal<boolean>(false);
-  dataCorrente = new Date();
+  // Uso di inject() per una Dependency Injection moderna
+  public budgetService = inject(BudgetService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(
-    public budgetService: BudgetService,
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  caricamento = signal<boolean>(false);
+  dataCorrente = signal<Date>(new Date()); // Trasformato in segnale per reattività ottimale
 
   ngOnInit() {
     this.budgetService.caricaTransazioni();
   }
 
   get nomeMeseFormattato(): string {
-    const mese = this.dataCorrente.toLocaleString('it-IT', { month: 'long' });
-    const anno = this.dataCorrente.getFullYear();
+    const data = this.dataCorrente();
+    const mese = data.toLocaleString('it-IT', { month: 'long' });
+    const anno = data.getFullYear();
     return `${mese.charAt(0).toUpperCase() + mese.slice(1)} ${anno}`;
   }
 
   get saldo(): number {
-    return this.budgetService.getSaldoMese(
-      this.dataCorrente.getFullYear(),
-      this.dataCorrente.getMonth() + 1,
-    );
+    const data = this.dataCorrente();
+    return this.budgetService.getSaldoMese(data.getFullYear(), data.getMonth() + 1);
   }
 
   get speseFisse(): number {
-    return this.budgetService.getTotaleSpeseFisse(
-      this.dataCorrente.getFullYear(),
-      this.dataCorrente.getMonth() + 1,
-    );
+    const data = this.dataCorrente();
+    return this.budgetService.getTotaleSpeseFisse(data.getFullYear(), data.getMonth() + 1);
   }
 
   get speseVariabili(): number {
-    return this.budgetService.getTotaleSpeseVariabili(
-      this.dataCorrente.getFullYear(),
-      this.dataCorrente.getMonth() + 1,
-    );
+    const data = this.dataCorrente();
+    return this.budgetService.getTotaleSpeseVariabili(data.getFullYear(), data.getMonth() + 1);
   }
 
   cambiaMese(delta: number) {
     this.caricamento.set(true);
-    this.dataCorrente.setMonth(this.dataCorrente.getMonth() + delta);
-    this.dataCorrente = new Date(this.dataCorrente);
+
+    // Aggiorniamo il segnale della data creando una nuova istanza
+    const nuovaData = new Date(this.dataCorrente());
+    nuovaData.setMonth(nuovaData.getMonth() + delta);
+    this.dataCorrente.set(nuovaData);
+
     this.caricamento.set(false);
   }
 

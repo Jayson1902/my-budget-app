@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetService } from '../../services/budget';
@@ -11,14 +11,14 @@ import { BudgetService } from '../../services/budget';
   styleUrl: './transaction-form.scss',
 })
 export class TransactionForm {
+  private budgetService = inject(BudgetService);
+
   tipo: 'income' | 'expense' = 'expense';
   titolo: string = '';
   importo: number | null = null;
   categoria: string = '';
   data: string = new Date().toISOString().substring(0, 10);
   isRicorrente: boolean = false;
-
-  constructor(private budgetService: BudgetService) {}
 
   async onSubmit() {
     if (!this.titolo || !this.importo || !this.categoria || !this.data) {

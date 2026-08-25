@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,30 +12,32 @@ import { AuthService } from '../../services/auth';
   styleUrl: './login.scss',
 })
 export class Login {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   email = '';
   password = '';
+
   modalitaRegistrazione = signal(false);
   errore = signal<string | null>(null);
+  successo = signal<string | null>(null);
   caricamento = signal(false);
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
 
   toggleModalita() {
     this.modalitaRegistrazione.update((v) => !v);
     this.errore.set(null);
+    this.successo.set(null);
   }
 
   async invia() {
     this.errore.set(null);
+    this.successo.set(null);
     this.caricamento.set(true);
 
     try {
       if (this.modalitaRegistrazione()) {
         await this.authService.signUp(this.email, this.password);
-        this.errore.set('Registrazione avvenuta! Controlla la tua email per confermare.');
+        this.successo.set('Registrazione avvenuta! Controlla la tua email per confermare.');
       } else {
         await this.authService.signIn(this.email, this.password);
         this.router.navigate(['/']);

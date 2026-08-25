@@ -1,7 +1,14 @@
-<form (ngSubmit)="onSubmit()">
+<form (ngSubmit)="onSubmit()" class="transaction-form">
+  <!-- SELETTORE TIPO TRANSAZIONE -->
   <div class="type-selector">
-    <label> <input type="radio" name="tipo" value="expense" [(ngModel)]="tipo" /> Uscita </label>
-    <label> <input type="radio" name="tipo" value="income" [(ngModel)]="tipo" /> Entrata </label>
+    <label class="type-option" [class.active]="tipo === 'expense'">
+      <input type="radio" name="tipo" value="expense" [(ngModel)]="tipo" />
+      <span>Uscita</span>
+    </label>
+    <label class="type-option" [class.active]="tipo === 'income'">
+      <input type="radio" name="tipo" value="income" [(ngModel)]="tipo" />
+      <span>Entrata</span>
+    </label>
   </div>
 
   <div class="form-grid">
@@ -9,7 +16,7 @@
       <label>Titolo</label>
       <input
         type="text"
-        placeholder="Es. Spesa al supermercato"
+        placeholder="Es. Supermercato"
         [(ngModel)]="titolo"
         name="titolo"
         required
@@ -50,5 +57,5 @@
     <label for="ricorrente">Spesa fissa / ricorrente</label>
   </div>
 
-  <button type="submit">Aggiungi transazione</button>
+  <button type="submit" class="btn-submit">Aggiungi transazione</button>
 </form>
