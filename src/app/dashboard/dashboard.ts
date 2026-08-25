@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { BudgetService } from '../services/budget';
@@ -12,19 +12,19 @@ import { TransactionForm } from './transaction-form/transaction-form';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
   caricamento = signal<boolean>(false);
   dataCorrente = new Date();
-
-  ngOnInit() {
-    this.budgetService.caricaTransazioni();
-  }
 
   constructor(
     public budgetService: BudgetService,
     private authService: AuthService,
     private router: Router,
   ) {}
+
+  ngOnInit() {
+    this.budgetService.caricaTransazioni();
+  }
 
   get nomeMeseFormattato(): string {
     const mese = this.dataCorrente.toLocaleString('it-IT', { month: 'long' });
@@ -36,7 +36,6 @@ export class Dashboard {
     return this.budgetService.getSaldoMese(
       this.dataCorrente.getFullYear(),
       this.dataCorrente.getMonth() + 1,
-      0,
     );
   }
 
