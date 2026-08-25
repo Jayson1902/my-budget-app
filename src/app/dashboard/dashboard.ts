@@ -64,13 +64,10 @@ export class Dashboard {
 
   async logout() {
     try {
-      console.log('Logout avviato...');
       await this.authService.signOut();
-      console.log('Sessione chiusa, reindirizzamento al login...');
-      await this.router.navigate(['/login']);
-    } catch (error: any) {
-      console.error('Errore critico durante il logout:', error);
-      // Forziamo comunque il reindirizzamento al login se Supabase fallisce
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('Errore durante il logout:', error);
       this.router.navigate(['/login']);
     }
   }
