@@ -1,12 +1,14 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { BudgetService } from '../services/budget';
+import { AuthService } from '../services/auth';
 import { TransactionForm } from './transaction-form/transaction-form';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TransactionForm],
+  imports: [CommonModule, TransactionForm, DecimalPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -14,7 +16,11 @@ export class Dashboard {
   caricamento = signal<boolean>(false);
   dataCorrente = new Date();
 
-  constructor(public budgetService: BudgetService) {}
+  constructor(
+    public budgetService: BudgetService,
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   get nomeMeseFormattato(): string {
     const mese = this.dataCorrente.toLocaleString('it-IT', { month: 'long' });
@@ -26,6 +32,7 @@ export class Dashboard {
     return this.budgetService.getSaldoMese(
       this.dataCorrente.getFullYear(),
       this.dataCorrente.getMonth() + 1,
+      0,
     );
   }
 
@@ -44,16 +51,27 @@ export class Dashboard {
   }
 
   cambiaMese(delta: number) {
+    this.caricamento.set(true);
     this.dataCorrente.setMonth(this.dataCorrente.getMonth() + delta);
     this.dataCorrente = new Date(this.dataCorrente);
+    this.caricamento.set(false);
   }
 
-  elimina(id?: string) {
+  elimina(id: string) {
     if (!id) return;
     this.budgetService.deleteTransaction(id);
   }
 
-  logout() {
-    // Gestione eventuale del logout (es. pulizia token/sessione Supabase)
+  async logout() {
+    try {
+      console.log('Logout avviato...');
+      await this.authService.signOut();
+      console.log('Sessione chiusa, reindirizzamento al login...');
+      await this.router.navigate(['/login']);
+    } catch (error: any) {
+      console.error('Errore critico durante il logout:', error);
+      // Forziamo comunque il reindirizzamento al login se Supabase fallisce
+      this.router.navigate(['/login']);
+    }
   }
 }

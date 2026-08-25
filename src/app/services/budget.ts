@@ -34,7 +34,7 @@ export class BudgetService {
   }
 
   // Calcola il saldo del mese corrente (Entrate - Uscite)
-  getSaldoMese(anno: number, mese: number): number {
+  getSaldoMese(anno: number, mese: number, transazioni: any): number {
     return this.transactions()
       .filter((t) => {
         const [y, m] = t.date.split('-').map(Number);

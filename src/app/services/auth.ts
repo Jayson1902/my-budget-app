@@ -14,7 +14,7 @@ export class AuthService {
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 
-    // Controlla se esiste già una sessione salvata (es. l'utente ha ricaricato la pagina)
+    // Controlla se l'utente ha ricaricato la pagina ed è già loggato
     this.supabase.auth.getSession().then(({ data }) => {
       this.currentUser.set(data.session?.user ?? null);
     });
@@ -37,8 +37,10 @@ export class AuthService {
     return data;
   }
 
+  // Metodo aggiunto per effettuare il logout
   async signOut() {
     const { error } = await this.supabase.auth.signOut();
     if (error) throw error;
+    this.currentUser.set(null);
   }
 }
