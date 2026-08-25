@@ -21,43 +21,39 @@ export class BudgetService {
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-    this.caricaTransazioni();
   }
 
-  // 1. Carica le transazioni dell'utente loggato da Supabase
   async caricaTransazioni() {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+      } = await this.supabase.auth.getUser();
+      if (!user) return;
 
-    if (!user) return;
+      const { data, error } = await this.supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id);
 
-    const { data, error } = await this.supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', user.id); // Prende solo le transazioni dell'utente corrente
-
-    if (error) {
-      console.error('Errore nel caricamento da Supabase:', error);
-    } else if (data) {
-      this.transactions.set(data as Transaction[]);
+      if (error) {
+        console.error('Errore nel caricamento da Supabase:', error);
+      } else if (data) {
+        this.transactions.set(data as Transaction[]);
+      }
+    } catch (err) {
+      console.error('Errore di connessione a Supabase:', err);
     }
   }
 
-  // 2. Aggiunge una nuova transazione su Supabase
   async addTransaction(transactionData: Omit<Transaction, 'id'>) {
     const {
       data: { user },
     } = await this.supabase.auth.getUser();
-
-    if (!user) {
-      console.error('Utente non autenticato!');
-      return;
-    }
+    if (!user) return;
 
     const newTransaction = {
       ...transactionData,
-      user_id: user.id, // Fondamentale per la policy RLS che hai impostato
+      user_id: user.id,
     };
 
     const { data, error } = await this.supabase
@@ -68,12 +64,10 @@ export class BudgetService {
     if (error) {
       console.error("Errore nell'inserimento:", error);
     } else if (data) {
-      // Aggiorna la lista locale con i dati tornati dal database
       this.transactions.update((list) => [...(data as Transaction[]), ...list]);
     }
   }
 
-  // 3. Rimuove una transazione tramite ID da Supabase
   async deleteTransaction(id: string) {
     const { error } = await this.supabase.from('transactions').delete().eq('id', id);
 

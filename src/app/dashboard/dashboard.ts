@@ -16,6 +16,10 @@ export class Dashboard {
   caricamento = signal<boolean>(false);
   dataCorrente = new Date();
 
+  ngOnInit() {
+    this.budgetService.caricaTransazioni();
+  }
+
   constructor(
     public budgetService: BudgetService,
     private authService: AuthService,
